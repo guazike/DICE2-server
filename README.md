@@ -1,2 +1,2 @@
 # DICE2-server
-server for DICE2
+server for DICE2.
