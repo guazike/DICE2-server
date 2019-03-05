@@ -329,6 +329,15 @@ module.exports.secretSigner = function(req, res){
     res.end(makeResult(params, petContract.secretSigner()));
 }
 
+//手动开奖
+module.exports.refundBet = async function(req, res){
+    if(!checkRequest("", req, res))
+        return;
+    var commit = req.query.commit;
+    var inputData = encodeABI("refundBet", commit);
+    await sendRawTransaction(null, "", null, inputData);
+}
+
 /*提现
 Account//交易发起人地址
 Amount//提现额度

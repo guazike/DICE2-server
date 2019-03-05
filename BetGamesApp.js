@@ -73,6 +73,8 @@ app.post('/favicon.ico', (req, res)=>{res.end()});
 
 app.get('/getSign', contract.getSign);
 app.get('/jackpot', contract.jackpot);
+app.get('/withdrawFunds', contract.withdrawFunds);
+app.get('/refundBet', contract.refundBet);
 app.get('/historyLog', contract.historyLog);
 app.get('/updateNonce', contract.updateNonce);
 app.get('/deployContract', contract.deployContract);

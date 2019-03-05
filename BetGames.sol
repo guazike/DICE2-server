@@ -72,6 +72,8 @@ contract ETZ_Dice {
     mapping(uint=>uint) private MAX_MASK;
 
     uint public undealBetNum = 0;
+    //list of unSettle commit
+    uint256[] public dealFailList;
 
     uint[] bitMap = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 
     65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864, 
@@ -92,6 +94,8 @@ contract ETZ_Dice {
         uint40 mask;
         // Address of a gambler, used to pay out winning bets.
         address gambler;
+        //store win amount
+        uint winAmount;
     }
 
     // Mapping from commits to all currently active & processed bets.
@@ -275,6 +279,7 @@ contract ETZ_Dice {
         bet.placeBlockNumber = block.number;
         bet.mask = uint40(betMask);
         bet.gambler = msg.sender;
+        bet.winAmount = 0;
         undealBetNum++;
 
         // Record commit in logs.
@@ -342,7 +347,7 @@ contract ETZ_Dice {
         }
 
         // Unlock the bet amount, regardless of the outcome.
-        lockedInBets -= uint128(diceWinAmount);
+        //lockedInBets -= uint128(diceWinAmount);
 
         // Roll for a jackpot (if eligible).
         if (bet.amount >= MIN_JACKPOT_BET) {
@@ -364,13 +369,24 @@ contract ETZ_Dice {
         // Send the funds to gambler.
         uint paymentAmount = diceWin + jackpotWin == 0 ? 1 wei : diceWin + jackpotWin;
         if (bet.gambler.send(paymentAmount)) {
-            // emit Released(bet.gambler, paymentAmount);
+            //delete bets[commit];
+            bet.amount = 0;
+            lockedInBets -= uint128(paymentAmount);
             emit SettleBetPayment(commit, bet.gambler, paymentAmount, diceWin, reveal, entropy, dice);
         } else {
-            emit FailedPayment(bet.gambler, paymentAmount);
+            if(paymentAmount>1){
+                bet.winAmount = paymentAmount;
+                dealFailList.push(commit);
+            }else{//ignore fail bet
+                bet.amount = 0;
+            }
+            // emit FailedPayment(bet.gambler, paymentAmount);//t 缓存开奖失败记录
         }
         undealBetNum--;
-        delete bets[commit];
+    }
+
+    function dealFailNum() public view returns(uint){
+        return dealFailList.length;
     }
 
 
@@ -382,27 +398,38 @@ contract ETZ_Dice {
     function refundBet(uint commit) external {
         // Check that bet is in 'active' state.
         Bet storage bet = bets[commit];
-        uint amount = bet.amount;
-
-        require (amount != 0, "Bet should be in an 'active' state");
-
         // Check that bet has already expired.
         require (block.number > bet.placeBlockNumber + BET_EXPIRATION_BLOCKS, "Blockhash can't be queried by EVM.");
-
-        // Move bet into 'processed' state, release funds.
+        uint amount = bet.amount;
+        require (amount != 0, "Bet should be in an 'active' state");
         bet.amount = 0;
 
-        uint diceWinAmount;
-        uint jackpotFee;
-        (diceWinAmount, jackpotFee) = getDiceWinAmount(amount, bet.modulo, bet.mask);
-
-        lockedInBets -= uint128(diceWinAmount);
-        jackpotSize -= uint128(jackpotFee);
+        // uint diceWinAmount;
+        // uint jackpotFee;
+        // (diceWinAmount, jackpotFee) = getDiceWinAmount(amount, bet.modulo, bet.mask);
 
         // Send the refund.
-        sendFunds(bet.gambler, amount, amount);
-        undealBetNum--;
-        delete bets[commit];
+        bool sendOk = sendFunds(bet.gambler, bet.winAmount, bet.winAmount);
+        if(sendOk){
+            lockedInBets -= uint128(bet.winAmount);
+            //remove failed bet by commit
+            uint len = dealFailList.length;
+            bool found = false;
+            for (uint i = 0; i<len; i++) {
+                if(commit == dealFailList[i]){
+                    found = true;
+                }
+                if(found && i<len-1){
+                    dealFailList[i] = dealFailList[i+1];
+                }
+            }
+            if(found){
+                delete dealFailList[len-1];
+                dealFailList.length--;
+            }
+        }else{
+            bet.amount = amount;
+        }
     }
 
     // Get the expected win amount after house edge is subtracted.
@@ -438,13 +465,16 @@ contract ETZ_Dice {
     }
 
     // Helper routine to process the payment.
-    function sendFunds(address beneficiary, uint amount, uint successLogAmount) private {
+    function sendFunds(address beneficiary, uint amount, uint successLogAmount) private returns(bool){
+        bool ok = false;
         if (beneficiary.send(amount)) {
+            ok = true;
             //emit Released(beneficiary, amount);
             emit Payment(beneficiary, amount, successLogAmount);
         } else {
             emit FailedPayment(beneficiary, amount);
         }
+        return ok;
     }
 
 }
