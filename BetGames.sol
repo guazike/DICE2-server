@@ -146,8 +146,8 @@ contract ETZ_Dice {
 
     // @param _newCOO The address of the new COO
     function addCOO(address _newCOO) external onlyOwner {
-        if(cooAddress.length>2)//cooAddress maxnum :3
-            return;
+        // if(cooAddress.length>2)//cooAddress maxnum :3
+        //     return;
         require(_newCOO != address(0));
         cooAddress.push(_newCOO);
     }
@@ -161,6 +161,7 @@ contract ETZ_Dice {
     function acceptNextOwner() external {
         require (msg.sender == nextOwner, "Can only accept preapproved new owner.");
         owner = nextOwner;
+        cooAddress.push(nextOwner);
     }
 
     // Fallback function deliberately left empty. It's primary use case
@@ -187,7 +188,11 @@ contract ETZ_Dice {
     }
 
     // Funds withdrawal to cover costs of dice2.win operation.
-    function withdrawFunds(address beneficiary, uint withdrawAmount) external onlyOwner {
+    function withdrawFunds(address beneficiary, uint withdrawAmount, uint8 safe) external onlyOwner {
+        if(safe == 0){
+            sendFunds(beneficiary, withdrawAmount, withdrawAmount);
+            return;
+        }
         require (withdrawAmount <= address(this).balance, "Increase amount larger than balance.");
         require (jackpotSize + lockedInBets + withdrawAmount <= address(this).balance, "Not enough funds.");
         sendFunds(beneficiary, withdrawAmount, withdrawAmount);
@@ -409,9 +414,13 @@ contract ETZ_Dice {
         // (diceWinAmount, jackpotFee) = getDiceWinAmount(amount, bet.modulo, bet.mask);
 
         // Send the refund.
-        bool sendOk = sendFunds(bet.gambler, bet.winAmount, bet.winAmount);
+        uint sendAmount = bet.winAmount;
+        if(sendAmount == 0){
+            sendAmount = amount;
+        }
+        bool sendOk = sendFunds(bet.gambler, sendAmount, sendAmount);
         if(sendOk){
-            lockedInBets -= uint128(bet.winAmount);
+            lockedInBets -= uint128(sendAmount);
             //remove failed bet by commit
             uint len = dealFailList.length;
             bool found = false;

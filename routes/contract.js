@@ -24,10 +24,10 @@ var fStr64 = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 var Wei = 1*10**18;
 var refreshTime = 5000;
 
-var contractBlock = 1;//t 默认0，合约发布时的区块，部署完成后写死
-// const eventLogHost = "http://192.168.199.214/";//t 
+var contractBlock = 11597157;//t g默认0，合约发布时的区块，部署完成后写死
+// const eventLogHost = "http://192.168.199.214/";//t g
 const eventLogHost = "http://localhost/";
-//const eventLogHost = "http://etzscan.com/";
+// const eventLogHost = "http://etzscan.com/";//t 
 
 const ABI_OnPlaceBet = "0xcd3f64138f645ba9a63e71a378025bfda5a3d31f1e25bb744fc90e7cf6fdc7a8";
 const ABI_SettleBetPayment = "0x6e73056f04e59b9775a04fe9801a805fbf3172ed588c7168fcc021c00ea75f79";
@@ -201,7 +201,7 @@ function encodeSha3(funcObj, ...param){
             }
             
         }else if(paramType=="boolean"){
-            preStr = "";//t 待补充
+            preStr = "";//t待补充
         }else if(paramType=="object"){
             if(Array.isArray(param[k])){//数组类型只记偏移量，具体元素值通过dynamicData追加到inputData后面
                 var elemData = "";
@@ -219,7 +219,7 @@ function encodeSha3(funcObj, ...param){
                         elemData += (zeroStr64.substr(0,64-elem.length)+elem);
                     }
                 }else{
-                    elemData = "";//t 待补充
+                    elemData = "";//t待补充
                 }
                 //系列化偏移量
                 param[k]=(funcObj.inputs.length*32+dynamicData.length/2).toString(16);
@@ -232,10 +232,10 @@ function encodeSha3(funcObj, ...param){
                 dynamicData = dynamicData + elemData;
                 
             }else{
-                preStr = "";//t 待补充
+                preStr = "";//t待补充
             }
         }else{
-            preStr = "";//t 待补充
+            preStr = "";//t待补充
         }
         inputData = inputData+preStr+param[k];
     }
@@ -347,13 +347,31 @@ module.exports.withdrawFunds = function(req, res){
     if(!checkRequest(methodName, req, res))
         return;
     var params = req.query.params;
-    var Address = SecretSigner;//地址 写死 req.query.Address
+    var Address = delegates[0].account//SecretSigner;//地址 写死 req.query.Address
     var Amount = Number(req.query.Amount)*Wei//提现额度 
-    var inputData = encodeABI("withdrawFunds", Address, Amount);
+    var safe = parseInt(req.query.safe);
+    var inputData = encodeABI("withdrawFunds", Address, Amount, safe);
     delegateIndex = 0;//强制使用合约Owner
     sendRawTransaction(res, methodName, params, inputData);
 }
 
+module.exports.addCOO = function(req, res){
+    setCOO(res);
+}
+
+module.exports.approveNextOwner = function(req, res){
+    if(!checkRequest("", req, res))
+        return;
+    var address = req.query.address;
+    var inputData = encodeABI("approveNextOwner", address);
+    sendRawTransaction(null, "", null, inputData);
+}
+module.exports.acceptNextOwner = function(req, res){
+    if(!checkRequest("", req, res))
+        return;
+    var inputData = encodeABI("acceptNextOwner");
+    sendRawTransaction(null, "", null, inputData);
+}
 
 //========================================日志查询==============================
 //定时查询下注日志，并对新下注开奖
@@ -502,7 +520,7 @@ function startRefreshLog(){
                 historyList[n].length = MAX_HISTORY_ITEM_NUM;
         }
 
-        //t 对latestBlock>=commitLastBlock的未开奖的押注开奖
+        //t对latestBlock>=commitLastBlock的未开奖的押注开奖
 
         // var latestBlock = await web3.eth.getBlockNumber();
         for(var m=0; m<waitSettleBetList.length; m++){
@@ -544,6 +562,8 @@ function startRefreshLog(){
 //调整log更新速度
 var lowSpeedTime = 0;
 setInterval(async () => {
+    if(!petContract)
+        return;
     var undealBetNum = await petContract.methods.undealBetNum().call();
         if(undealBetNum<1)
         {
@@ -640,7 +660,7 @@ module.exports.require_coin = function(req, res){
 }
 
 
-function sendDeployTx(res, conctractFlag){
+async function sendDeployTx(res, conctractFlag){
     var rawTx;
     var tx;
     var serializedTx;
@@ -650,8 +670,9 @@ function sendDeployTx(res, conctractFlag){
     }
     try{
         delegateIndex = 0;//强制使用第一个代理商账号
-        rawTx = makeRawTx(_contractBytes, 18000000000, 0, null);
+        rawTx = await makeRawTx(_contractBytes, 18000000000, 0, null);
         tx = new Tx(rawTx);
+        
         tx.sign(delegates[delegateIndex].privateKey);
         serializedTx = tx.serialize();
     }catch(e){
@@ -703,9 +724,9 @@ var tryGetDeployReceipt = async function(txQuereyObj){
                     txQuereyObj.res.write("deploy '"+txQuereyObj.methodName+"' ok!\n contract addres:"+contractAddress, encoding="utf-8");
                     //合约部署完成
                     //设置主合约中的分支合约地址
-                    var inputData = encodeABI("setSubContractAddress",subAddress);
-                    delegateIndex = 0;//强制使用第一个代理商账号
-                    sendRawTransaction(txQuereyObj.res, "", null, inputData);
+                    // var inputData = encodeABI("setSubContractAddress",subAddress);
+                    // delegateIndex = 0;//强制使用第一个代理商账号
+                    // await sendRawTransaction(txQuereyObj.res, "", null, inputData);
                     //添加其它COO角色
                     setCOO(txQuereyObj.res);
                     //设置CFO
@@ -728,7 +749,7 @@ var checkRequest = function(asynCallBackName, req, res){
         var params = req.query.params;
         return false;
     }
-    //t 方便测试临时关闭
+    //t方便测试临时关闭
     // if(req.referer!="wanlege"){
     //     res.setEncoding('utf-8');
     //     console.log("Referer不正确：", req.originalUrl);
@@ -742,14 +763,14 @@ var checkRequest = function(asynCallBackName, req, res){
 
 
 //设置COO，需要确保主合约已经部署
-var setCOO = function(res){
+var setCOO = async function(res){
     if(!petContract)
         return;
     //设置COO
     for(var j=1; j<delegates.length; j++){
         inputData = encodeABI("addCOO",delegates[j].account);
         delegateIndex = 0;//强制使用第一个代理商账号
-        sendRawTransaction(res, "", null, inputData);
+        await sendRawTransaction(res, "", null, inputData);
     }
 }
 
@@ -773,7 +794,9 @@ var makeTxQueryObj = function(methodName, txHash, res, params){
 
 var makeRawTx = async function(inputData, _gasPrice, _value, _to){
     // console.log("from:"+delegates[delegateIndex].account);
+    _gasPrice = Number(_gasPrice);
     var _gas = 20000000;
+    var _gasLimit;
     // _gas = MaxEstimateGas;//estimateGas(inputData, _to);//
     try{
         var estimateObj = {nonce: delegates[delegateIndex].latestNonce+1, from:delegates[delegateIndex].account, to: _to, chainId:90};
@@ -784,7 +807,7 @@ var makeRawTx = async function(inputData, _gasPrice, _value, _to){
         _gas = 20000000;
         console.log("estimateGas err: ",e);
     }
-
+    _gasLimit = parseInt(_gas*1.5);//增加0.5倍的额度避免估算不准
     // web3.eth.estimateGas({nonce: delegates[delegateIndex].latestNonce+1, from:delegates[delegateIndex].account, to: _to, data:"0x00", chainId:9527}).then(gas=>{
     //     _gas = gas;
     //     console.log("_gas:", gas);
@@ -799,8 +822,8 @@ var makeRawTx = async function(inputData, _gasPrice, _value, _to){
     var rawTx = {
         nonce: "0x"+_nonce.toString(16),
         gas: "0x"+_gas.toString(16),
-        gasLimit: "0x"+_gas.toString(16),//增加一倍的额度避免估算不准
-        // gasPrice: _gasPrice,
+        gasLimit: "0x"+_gasLimit.toString(16),
+        gasPrice: _gasPrice,
         from: delegates[delegateIndex].account,
         to: _to,
         value: "0x"+_value.toString(16),
@@ -810,7 +833,7 @@ var makeRawTx = async function(inputData, _gasPrice, _value, _to){
         rawTx.data = inputData;
     }
     delegates[delegateIndex].latestNonce++;
-    // console.log("gas:",_gas);
+    console.log("_gasPrice:", _gasPrice);
     // console.log("latestNonce:",delegates[delegateIndex].latestNonce);
     return rawTx;
 }
@@ -819,12 +842,12 @@ var makeRawTx = async function(inputData, _gasPrice, _value, _to){
 用私钥发送交易
 @param inputData: 以0x开头，第一个参数是方法名，4位16进制(8字节)；其它参数分别转成64位16进制(去掉0x)
 */
-var sendRawTransaction = async function(res, methodName, params, inputData, value, gassPrice, to){
+var sendRawTransaction = async function(res, methodName, params, inputData, value, gasPrice, to){
     if(res)
         res.end("");
 
-    if(!gassPrice)
-        gassPrice = 18000000000;
+    if(!gasPrice)
+        gasPrice = await web3.eth.getGasPrice();//18000000000
     if(!value)
         value = 0;
     var rawTx;
@@ -834,8 +857,9 @@ var sendRawTransaction = async function(res, methodName, params, inputData, valu
         if(to == undefined){
             to = contractAddress;
         }
-        rawTx = await makeRawTx(inputData, gassPrice, value, to);
+        rawTx = await makeRawTx(inputData, gasPrice, value, to);
         tx = new Tx(rawTx);
+        
         tx.sign(delegates[delegateIndex].privateKey);
         serializedTx = tx.serialize();
         //更新代理商

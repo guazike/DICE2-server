@@ -71,6 +71,9 @@ var contract = require('./routes/contract');
 app.get('/favicon.ico', (req, res)=>{res.end()});
 app.post('/favicon.ico', (req, res)=>{res.end()});
 
+app.get('/addCOO', contract.addCOO);
+// app.get('/approveNextOwner', contract.approveNextOwner);
+// app.get('/acceptNextOwner', contract.acceptNextOwner);
 app.get('/getSign', contract.getSign);
 app.get('/jackpot', contract.jackpot);
 app.get('/withdrawFunds', contract.withdrawFunds);
