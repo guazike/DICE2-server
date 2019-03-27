@@ -376,7 +376,7 @@ contract ETZ_Dice {
         if (bet.gambler.send(paymentAmount)) {
             //delete bets[commit];
             bet.amount = 0;
-            lockedInBets -= uint128(paymentAmount);
+            lockedInBets -= uint128(diceWinAmount);
             emit SettleBetPayment(commit, bet.gambler, paymentAmount, diceWin, reveal, entropy, dice);
         } else {
             if(paymentAmount>1){
