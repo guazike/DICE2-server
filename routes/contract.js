@@ -24,10 +24,10 @@ var fStr64 = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 var Wei = 1*10**18;
 var refreshTime = 5000;
 
-var contractBlock = 11597157;//t g默认0，合约发布时的区块，部署完成后写死
+var contractBlock = 12891315;//t g默认0，合约发布时的区块，部署完成后写死
 // const eventLogHost = "http://192.168.199.214/";//t g
 const eventLogHost = "http://localhost/";
-// const eventLogHost = "http://etzscan.com/";//t 
+// const eventLogHost = "http://etzscan.com/";//t
 
 const ABI_OnPlaceBet = "0xcd3f64138f645ba9a63e71a378025bfda5a3d31f1e25bb744fc90e7cf6fdc7a8";
 const ABI_SettleBetPayment = "0x6e73056f04e59b9775a04fe9801a805fbf3172ed588c7168fcc021c00ea75f79";
@@ -96,9 +96,9 @@ module.exports.onWeb3 = async function(){
                 setCOO(_res);
             }
         });
-        
+
     }
-    
+
     initLastSettleBlock();
 }
 
@@ -140,7 +140,7 @@ function encodeABI(methodName, ...param){
 function encodeSha3(funcObj, ...param){
     if(!funcObj)
         return "";
-    
+
     //系列化方法名
     var methodStr = funcObj.name+"(";
     if(funcObj.inputs){
@@ -175,7 +175,7 @@ function encodeSha3(funcObj, ...param){
                 param[k] = (parseInt(carryV)+param[k]).toString(16);
                 //param[k] = "f";
                 preStr = fStr64.substr(0,64-param[k].length);
-            }  
+            }
         }else if(paramType=="string"){//最长32个字符
             if(param[k].indexOf("0x")==0){
                 param[k] = param[k].substr(2);
@@ -197,9 +197,9 @@ function encodeSha3(funcObj, ...param){
                 dynamicData = dynamicData + zeroStr64.substr(0,64-elemNum.length)+elemNum;
                 //系列化数组元素
                 dynamicData = dynamicData + elemData;
-                
+
             }
-            
+
         }else if(paramType=="boolean"){
             preStr = "";//t待补充
         }else if(paramType=="object"){
@@ -224,13 +224,13 @@ function encodeSha3(funcObj, ...param){
                 //系列化偏移量
                 param[k]=(funcObj.inputs.length*32+dynamicData.length/2).toString(16);
                 preStr = zeroStr64.substr(0,64-param[k].length);
-                
+
                 //系列化数组长度
                 var elemNum = param[k].length.toString(16);
                 dynamicData = dynamicData + zeroStr64.substr(0,64-elemNum.length)+elemNum;
                 //系列化数组元素
                 dynamicData = dynamicData + elemData;
-                
+
             }else{
                 preStr = "";//t待补充
             }
@@ -281,14 +281,14 @@ function toArray(arrayInput){
 
 
 //=========================================调用合约===========================================
-//返回 uint commitLastBlock, uint commit, bytes32 r, bytes32 s 
+//返回 uint commitLastBlock, uint commit, bytes32 r, bytes32 s
 module.exports.getSign = function(req, res){
     web3.eth.getBlockNumber(async (err, latestBlock)=>{
         if(err){
             res.end("");
             return;
         }
-        
+
         var commitLastBlock = latestBlock+60;
         var randNum = Number(String(Math.random()).substr(2));//542454872110//截取小数点后面的数字
         var commit = hash(encodePacked(randNum));
@@ -303,7 +303,7 @@ module.exports.getSign = function(req, res){
 module.exports.jackpot = async function(req, res){
     if(!checkRequest("", req, res))
         return;
-    
+
     var params = req.query.params;
     var tokens = await petContract.methods.jackpotSize().call();
     // console.log("txHash:",txHash);
@@ -315,7 +315,7 @@ module.exports.jackpot = async function(req, res){
 module.exports.contractBalance = function(req, res){
     if(!checkRequest("", req, res))
         return;
-    
+
     var params = req.query.params;
     var tokens = petContract.contractBalance();
     // console.log("txHash:",txHash);
@@ -348,7 +348,7 @@ module.exports.withdrawFunds = function(req, res){
         return;
     var params = req.query.params;
     var Address = delegates[0].account//SecretSigner;//地址 写死 req.query.Address
-    var Amount = Number(req.query.Amount)*Wei//提现额度 
+    var Amount = Number(req.query.Amount)*Wei//提现额度
     var safe = parseInt(req.query.safe);
     var inputData = encodeABI("withdrawFunds", Address, Amount, safe);
     delegateIndex = 0;//强制使用合约Owner
@@ -386,7 +386,7 @@ module.exports.historyLog = function(req, res){
     for(var i=0; i<logList.length; i++){
         if(logList[i].commit == lastCommit)
             break;
-        
+
         if(address){
             if(address==logList[i].gambler){
                 newLogList.push(logList[i]);
@@ -402,7 +402,7 @@ module.exports.historyLog = function(req, res){
 function initLastSettleBlock(){
     historyStartBlock = contractBlock;
     console.log("start historyStartBlock:",historyStartBlock);
-    httpReq(eventLogHost+"publicAPI?module=logs&action=getLogs&address="+contractAddress+"&fromBlock="+historyStartBlock+1+"&topics="+ABI_SettleBetPayment+"&limit=15&returnFilters=blockNumber,-_id", 
+    httpReq(eventLogHost+"publicAPI?module=logs&action=getLogs&address="+contractAddress+"&fromBlock="+historyStartBlock+1+"&topics="+ABI_SettleBetPayment+"&limit=15&returnFilters=blockNumber,-_id",
     (eventLogList)=>{
         eventLogList = JSON.parse(eventLogList);
         if(!eventLogList || eventLogList.status!=1){
@@ -429,7 +429,7 @@ function startRefreshLog(){
     newItemDic[3]=[];
 
     refreshLogHandle = setInterval(function(){
-    httpReq(eventLogHost+"publicAPI?module=logs&action=getLogs&address="+contractAddress+"&fromBlock="+(historyStartBlock+1)+"&returnFilters=txHash,blockNumber,topics,data,-_id", 
+    httpReq(eventLogHost+"publicAPI?module=logs&action=getLogs&address="+contractAddress+"&fromBlock="+(historyStartBlock+1)+"&returnFilters=txHash,blockNumber,topics,data,-_id",
     async (eventLogList)=>{
         eventLogList = JSON.parse(eventLogList);
         if(!eventLogList || eventLogList.status!=1){
@@ -513,7 +513,7 @@ function startRefreshLog(){
                 newItemDic[e] = [];
             }
         }
-        
+
         //删除超出长度的记录
         for(var n=0; n<historyList.length; n++){
             if(historyList[n].length>MAX_HISTORY_ITEM_NUM)
@@ -555,7 +555,7 @@ function startRefreshLog(){
         // }
 
     })
-    
+
   }, refreshTime);
 }
 
@@ -672,7 +672,7 @@ async function sendDeployTx(res, conctractFlag){
         delegateIndex = 0;//强制使用第一个代理商账号
         rawTx = await makeRawTx(_contractBytes, 18000000000, 0, null);
         tx = new Tx(rawTx);
-        
+
         tx.sign(delegates[delegateIndex].privateKey);
         serializedTx = tx.serialize();
     }catch(e){
@@ -703,7 +703,7 @@ var tryGetDeployReceipt = async function(txQuereyObj){
         txQuereyObj.res = null;
         txQuereyObj = null;
         return;
-    }    
+    }
 
     var txReceipt = await web3.eth.getTransactionReceipt(txQuereyObj.txHash);
             if(txReceipt==null)
@@ -731,7 +731,7 @@ var tryGetDeployReceipt = async function(txQuereyObj){
                     setCOO(txQuereyObj.res);
                     //设置CFO
                     // setSecretSigner(txQuereyObj.res);
-                    
+
                     console.log("\ndeploy finish !");
                     txQuereyObj.res = null;
                     txQuereyObj = null;
@@ -778,7 +778,7 @@ var setCOO = async function(res){
 var setSecretSigner = function(res){
     if(!petContract)
         return;
-    
+
     var inputData = encodeABI("setSecretSigner",SecretSigner);
     delegateIndex = 0;//强制使用第一个代理商账号
     sendRawTransaction(res, "", null, inputData);
@@ -859,7 +859,7 @@ var sendRawTransaction = async function(res, methodName, params, inputData, valu
         }
         rawTx = await makeRawTx(inputData, gasPrice, value, to);
         tx = new Tx(rawTx);
-        
+
         tx.sign(delegates[delegateIndex].privateKey);
         serializedTx = tx.serialize();
         //更新代理商
@@ -911,4 +911,3 @@ function httpReq(url, cb){
     });
     req.end();
 }
-

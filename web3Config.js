@@ -35,6 +35,7 @@ var startWeb3 = async function(cb) {
     var rpcURL;
     //为调试与发布模式强制设置一些值方便测试与提高安全性
     if(debugMode){
+      contractAddress="0xcb826cb2e45215fdd57552ceecd7369307af6d74"
         // contractAddress="0x1B8356E2EA33aEb90eA80439630E5a07C1678542";
         rpcURL = 'http://localhost:9646';
         // contractAddress="0x5d478631823cef55441bc71e4365a1836d1e4cbd";//t
