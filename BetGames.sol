@@ -75,8 +75,8 @@ contract ETZ_Dice {
     //list of unSettle commit
     uint256[] public dealFailList;
 
-    uint[] bitMap = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 
-    65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864, 
+    uint[] bitMap = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768,
+    65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864,
     134217728, 268435456, 536870912, 1073741824, 2147483648, 4294967296, 8589934592, 17179869184, 34359738368];
 
 
@@ -113,7 +113,7 @@ contract ETZ_Dice {
     event SettleBetPayment(uint256 indexed commit, address indexed gambler, uint256 indexed totalAmount, uint256 amount, uint256 reveal, uint256 entropy, uint256 dice);
     // event JackpotPayment(address indexed gambler, uint256 amount);
     // event Released(address,uint);
-    
+
     // event TestLog(uint8 indexed flag, uint indexed dicePower, uint40 indexed mask, uint diceWin);
 
     // Constructor. Deliberately does not take any parameters.
@@ -284,7 +284,7 @@ contract ETZ_Dice {
         bet.placeBlockNumber = block.number;
         bet.mask = uint40(betMask);
         bet.gambler = msg.sender;
-        bet.winAmount = 0;
+        bet.winAmount = possibleWinAmount;
         undealBetNum++;
 
         // Record commit in logs.
@@ -324,7 +324,7 @@ contract ETZ_Dice {
         // preimage is intractable), and house is unable to alter the "reveal" after
         // placeBet have been mined (as Keccak256 collision finding is also intractable).
         uint entropy = uint(keccak256(abi.encodePacked(reveal, blockhash(placeBlockNum))));
-        
+
 
         // Do a roll by taking a modulo of entropy. Compute winning amount.
         uint dice = entropy % modulo;
@@ -332,7 +332,7 @@ contract ETZ_Dice {
         uint diceWinAmount;
         uint _jackpotFee;
         (diceWinAmount, _jackpotFee) = getDiceWinAmount(bet.amount, modulo, bet.mask);
-        
+
         uint diceWin = 0;
         uint jackpotWin = 0;
 
@@ -460,7 +460,7 @@ contract ETZ_Dice {
         }else{
             betOnTargetNum = betMask;
         }
-            
+
         //standZoomRate = modulo/betOnTargetNum
         uint fee = 0;
         if(amount<60000000000000000000){//60ether
