@@ -569,13 +569,13 @@ setInterval(async () => {
         {
             lowSpeedTime++;
             if(lowSpeedTime>3){//连续3次没人下注，则降低更新速度
-                refreshTime = 10000;
+                refreshTime = 3000;
                 startRefreshLog();
             }
         }else{
             if(refreshTime!=2000){
                 lowSpeedTime = 0;
-                refreshTime = 2000;
+                refreshTime = 1000;
                 startRefreshLog();
             }
         }
