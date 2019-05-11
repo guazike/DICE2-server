@@ -804,8 +804,9 @@ var makeRawTx = async function(inputData, _gasPrice, _value, _to){
             estimateObj.data=inputData;
         _gas = await web3.eth.estimateGas(estimateObj);
     }catch(e){
-        _gas = 20000000;
+        // _gas = 20000000;
         console.log("estimateGas err: ",e);
+        throw e
     }
     _gasLimit = parseInt(_gas*1.5);//增加0.5倍的额度避免估算不准
     // web3.eth.estimateGas({nonce: delegates[delegateIndex].latestNonce+1, from:delegates[delegateIndex].account, to: _to, data:"0x00", chainId:9527}).then(gas=>{
