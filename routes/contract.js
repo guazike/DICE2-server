@@ -896,7 +896,7 @@ var intervalMakeTX = () => {
         if(errMsg==null){
             console.log("sendSignedTransaction methodName:"+data.methodName+" txHash:",txHash);
         }else{
-            console.log(methodName+" errMsg:", errMsg);
+            console.log(data.methodName+" errMsg:", errMsg);
             if(errMsg.toString().toLowerCase().indexOf("nonce too low")!=-1){
                 //更新nonce
                 exports.updateNonce(null, null);
