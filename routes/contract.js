@@ -530,8 +530,10 @@ function startRefreshLog(){
             var commit = waitSettleBetList[m].topics[1];//commit
             var commitDicObj = commitDic[commit];
             var inputData;
+            let methodName;
             if(commitDicObj){
                 inputData = encodeABI("settleBet", commitDicObj.reveal, waitSettleBetList[m].blockNumber);
+                methodName = "settleBet";
             }else{
                 console.log("服务器重启前未开奖的押注，取消押注，m:",m, " commit:",commit);
                 //删除waitSettleBetList第m个元素
@@ -545,8 +547,9 @@ function startRefreshLog(){
                 waitSettleBetList = tempArr;
                 inputData = encodeABI("refundBet", commit);
                 console.log("settle commit:",commit);
+                methodName = "refundBet";
             }
-            await sendRawTransaction(null, "", null, inputData);
+            await sendRawTransaction(null, methodName, null, inputData);
         }
 
         // //更新最后开奖区块
