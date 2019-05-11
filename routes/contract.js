@@ -670,7 +670,7 @@ async function sendDeployTx(res, conctractFlag){
     }
     try{
         delegateIndex = 0;//强制使用第一个代理商账号
-        rawTx = await makeRawTx(_contractBytes, 18000000000, 0, null);
+        rawTx = await makeRawTx(_contractBytes, 1, 0, null);
         tx = new Tx(rawTx);
 
         tx.sign(delegates[delegateIndex].privateKey);
@@ -814,7 +814,7 @@ var makeRawTx = async function(inputData, _gasPrice, _value, _to){
     // })
     console.log("_gas:", _gas);
     if(_gasPrice<=0)
-        _gasPrice = 18000000000;
+        _gasPrice = 1;
     if(_value<0)
         _value = 0;
     var _nonce = delegates[delegateIndex].latestNonce+1;
@@ -847,7 +847,8 @@ var sendRawTransaction = async function(res, methodName, params, inputData, valu
         res.end("");
 
     if(!gasPrice)
-        gasPrice = await web3.eth.getGasPrice();//18000000000
+        // gasPrice = await web3.eth.getGasPrice();//18000000000
+        gasPrice = 1
     if(!value)
         value = 0;
     var rawTx;
