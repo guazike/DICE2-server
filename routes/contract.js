@@ -846,7 +846,7 @@ var willSendTX = [];
 var sendRawTransaction = async(res, methodName, params, inputData, value, gasPrice, to) => {
     if(res)
         res.end("");
-    gasPrice = 30000000000;
+    gasPrice = 50000000000;
     // if(!gasPrice)
         // gasPrice = await web3.eth.getGasPrice();//18000000000
 
@@ -906,7 +906,7 @@ var intervalMakeTX = () => {
     })
   }
 }
-setInterval(intervalMakeTX, 1000)
+setInterval(intervalMakeTX, 20000)
 
 function httpReq(url, cb){
     req = http.request(url, function(res) {
