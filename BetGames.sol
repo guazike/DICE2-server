@@ -99,7 +99,7 @@ contract ETZ_Dice {
     }
 
     // Mapping from commits to all currently active & processed bets.
-    mapping (uint => Bet) bets;
+    mapping (uint => Bet) public bets;
 
     address[] public cooAddress;
 
@@ -436,6 +436,7 @@ contract ETZ_Dice {
                 delete dealFailList[len-1];
                 dealFailList.length--;
             }
+            undealBetNum--;
         }else{
             bet.amount = amount;
         }
