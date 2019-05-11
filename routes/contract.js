@@ -846,7 +846,7 @@ var willSendTX = [];
 var sendRawTransaction = async(res, methodName, params, inputData, value, gasPrice, to) => {
     if(res)
         res.end("");
-    gasPrice = 18000000000;
+    gasPrice = 30000000000;
     // if(!gasPrice)
         // gasPrice = await web3.eth.getGasPrice();//18000000000
 
