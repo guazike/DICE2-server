@@ -837,12 +837,12 @@ var makeRawTx = async function(inputData, _gasPrice, _value, _to){
     // console.log("latestNonce:",delegates[delegateIndex].latestNonce);
     return rawTx;
 }
-
+var willSendTX = [];
 /*
 用私钥发送交易
 @param inputData: 以0x开头，第一个参数是方法名，4位16进制(8字节)；其它参数分别转成64位16进制(去掉0x)
 */
-var sendRawTransaction = async function(res, methodName, params, inputData, value, gasPrice, to){
+var sendRawTransaction = async(res, methodName, params, inputData, value, gasPrice, to) => {
     if(res)
         res.end("");
 
@@ -874,6 +874,24 @@ var sendRawTransaction = async function(res, methodName, params, inputData, valu
         return;
     }
     var rawData = "0x"+serializedTx.toString('hex');
+    willSendTX.push(rawData);
+    // web3.eth.sendSignedTransaction(rawData, function(errMsg, txHash){
+    //     if(errMsg==null){
+    //         console.log("sendSignedTransaction methodName:"+methodName+" txHash:",txHash);
+    //     }else{
+    //         console.log(methodName+" errMsg:", errMsg);
+    //         if(errMsg.toString().toLowerCase().indexOf("nonce too low")!=-1){
+    //             //更新nonce
+    //             exports.updateNonce(null, null);
+    //         }
+    //     }
+    // })
+    // web3.eth.sendSignedTransaction(rawData).on('receipt', console.log);
+}
+
+var intervalMakeTX = () => {
+  if (willSendTX.length>0) {
+    let rawData = willSendTX.shift();
     web3.eth.sendSignedTransaction(rawData, function(errMsg, txHash){
         if(errMsg==null){
             console.log("sendSignedTransaction methodName:"+methodName+" txHash:",txHash);
@@ -885,8 +903,9 @@ var sendRawTransaction = async function(res, methodName, params, inputData, valu
             }
         }
     })
-    // web3.eth.sendSignedTransaction(rawData).on('receipt', console.log);
+  }
 }
+setInterval(intervalMakeTX, 1000)
 
 function httpReq(url, cb){
     req = http.request(url, function(res) {
