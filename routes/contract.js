@@ -874,7 +874,7 @@ var sendRawTransaction = async(res, methodName, params, inputData, value, gasPri
         return;
     }
     var rawData = "0x"+serializedTx.toString('hex');
-    willSendTX.push(rawData);
+    willSendTX.push({rawData: rawData, methodName: methodName});
     // web3.eth.sendSignedTransaction(rawData, function(errMsg, txHash){
     //     if(errMsg==null){
     //         console.log("sendSignedTransaction methodName:"+methodName+" txHash:",txHash);
@@ -891,10 +891,10 @@ var sendRawTransaction = async(res, methodName, params, inputData, value, gasPri
 
 var intervalMakeTX = () => {
   if (willSendTX.length>0) {
-    let rawData = willSendTX.shift();
-    web3.eth.sendSignedTransaction(rawData, function(errMsg, txHash){
+    let data = willSendTX.shift();
+    web3.eth.sendSignedTransaction(data.rawData, function(errMsg, txHash){
         if(errMsg==null){
-            console.log("sendSignedTransaction methodName:"+methodName+" txHash:",txHash);
+            console.log("sendSignedTransaction methodName:"+data.methodName+" txHash:",txHash);
         }else{
             console.log(methodName+" errMsg:", errMsg);
             if(errMsg.toString().toLowerCase().indexOf("nonce too low")!=-1){
