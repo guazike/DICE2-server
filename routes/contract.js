@@ -24,7 +24,7 @@ var fStr64 = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 var Wei = 1*10**18;
 var refreshTime = 5000;
 
-var contractBlock = 12896462;//t g默认0，合约发布时的区块，部署完成后写死
+var contractBlock = 16296913;//t g默认0，合约发布时的区块，部署完成后写死
 // const eventLogHost = "http://192.168.199.214/";//t g
 const eventLogHost = "http://localhost/";
 // const eventLogHost = "http://etzscan.com/";//t
@@ -670,7 +670,7 @@ async function sendDeployTx(res, conctractFlag){
     }
     try{
         delegateIndex = 0;//强制使用第一个代理商账号
-        rawTx = await makeRawTx(_contractBytes, 21000000000, 0, null);
+        rawTx = await makeRawTx(_contractBytes, 1, 0, null);
         tx = new Tx(rawTx);
 
         tx.sign(delegates[delegateIndex].privateKey);
@@ -846,7 +846,7 @@ var willSendTX = [];
 var sendRawTransaction = async(res, methodName, params, inputData, value, gasPrice, to) => {
     if(res)
         res.end("");
-    gasPrice = 50000000000;
+    gasPrice = 1000000000;
     // if(!gasPrice)
         // gasPrice = await web3.eth.getGasPrice();//18000000000
 
@@ -906,7 +906,7 @@ var intervalMakeTX = () => {
     })
   }
 }
-setInterval(intervalMakeTX, 20000)
+setInterval(intervalMakeTX, 1000)
 
 function httpReq(url, cb){
     req = http.request(url, function(res) {
