@@ -111,6 +111,7 @@ contract ETZ_Dice {
     event FailedPayment(address indexed beneficiary, uint256 amount);
     event Payment(address beneficiary, uint256 totalAmount, uint256 amount);
     event SettleBetPayment(uint256 indexed commit, address indexed gambler, uint256 indexed totalAmount, uint256 amount, uint256 reveal, uint256 entropy, uint256 dice);
+    event LogRefundBet(uint256 indexed commit, address indexed gambler, uint256 indexed totalAmount, uint256 unlockAmount);
     // event JackpotPayment(address indexed gambler, uint256 amount);
     // event Released(address,uint);
 
@@ -418,7 +419,7 @@ contract ETZ_Dice {
         if(sendAmount == 0){
             sendAmount = amount;
         }
-        bool sendOk = sendFunds(bet.gambler, sendAmount, sendAmount);
+        bool sendOk = sendFunds(bet.gambler, amount, amount);//2019.5.13 sendAmount=> amount refund more than they bet
         if(sendOk){
             lockedInBets -= uint128(sendAmount);
             //remove failed bet by commit
@@ -436,6 +437,7 @@ contract ETZ_Dice {
                 delete dealFailList[len-1];
                 dealFailList.length--;
             }
+            emit LogRefundBet(commit, bet.gambler, amount, sendAmount);
             undealBetNum--;
         }else{
             bet.amount = amount;
