@@ -537,7 +537,8 @@ function startRefreshLog(){
             var inputData;
             let methodName;
             if(commitDicObj){
-                inputData = encodeABI("settleBet", commitDicObj.reveal, waitSettleBetList[m].blockNumber);
+                // inputData = encodeABI("settleBet", commitDicObj.reveal, waitSettleBetList[m].blockNumber);
+                inputData = petContract.methods["settleBet"](commitDicObj.reveal, waitSettleBetList[m].blockNumber).encodeABI();
                 methodName = "settleBet";
             }else{
                 console.log("服务器重启前未开奖的押注，取消押注，m:",m, " commit:",commit);
