@@ -31,6 +31,7 @@ const eventLogHost = "http://localhost/";
 
 const ABI_OnPlaceBet = "0xcd3f64138f645ba9a63e71a378025bfda5a3d31f1e25bb744fc90e7cf6fdc7a8";
 const ABI_SettleBetPayment = "0x6e73056f04e59b9775a04fe9801a805fbf3172ed588c7168fcc021c00ea75f79";
+const ABI_LogRefundBet = "0x83798b5c761afdb819ea1f3ccab12f29f98ed03b67b599c0570c03d36259a07e";
 const MAX_HISTORY_ITEM_NUM = 50;//开奖记录列表的最大长度
 const moduloIndexDic = {
     "0x0000000000000000000000000000000000000000000000000000000000000002":0,//投硬币
@@ -450,7 +451,7 @@ function startRefreshLog(){
         for(var i=0; i<eventLogList.result.length; i++){
             if(eventLogList.result[i].topics[0]==ABI_OnPlaceBet){//下注事件
                 placeBet.push(eventLogList.result[i]);
-            }else if(eventLogList.result[i].topics[0]==ABI_SettleBetPayment){//开奖事件
+            }else if(eventLogList.result[i].topics[0]==ABI_SettleBetPayment || eventLogList.result[i].topics[0]==ABI_LogRefundBet){//开奖事件
                 settleBetList.push(eventLogList.result[i]);
             }
         }
@@ -467,34 +468,36 @@ function startRefreshLog(){
                         continue;
                     }
                     //根据游戏列表转移到最终开奖列表
-                    var modulo = waitSettleBetItem.topics[3];
-                    var betMask = Number(waitSettleBetItem.data.substr(0,66));//topic[4]押注对象
-                    var commitLastBlock = Number("0x"+waitSettleBetItem.data.substr(130,64))+120;//topic[6] 120是开奖最大有效延迟区块
-                    var totalWin = Number(settleBetItem.topics[3])/Wei;
-                    var betWin = Number(settleBetItem.data.substr(0,66))/Wei;//topic[4]
-                    var secretNumber = Number("0x"+settleBetItem.data.substr(66,64));//topics[5]
-                    var entropy = "0x"+settleBetItem.data.substr(130,64);//topic[6]
-                    var jeckpot = totalWin-betWin;
-                    if(jeckpot < 0.00001)//默认没中奖会给1wei
-                        jeckpot = 0;
-                    var historyItem = {};
-                    historyItem.commit = waitSettleBetItem.topics[1];
-                    historyItem.gambler = "0x"+waitSettleBetItem.topics[2].substring(26,66);
-                    historyItem.mask = betMask;
-                    historyItem.betAmount = (Number("0x"+waitSettleBetItem.data.substr(66,64))/Wei).toFixed(2);//topics[5]//押注金额
-                    historyItem.totalWin= totalWin.toFixed(2);//包括大奖
-                    historyItem.betWin= betWin.toFixed(2);
-                    historyItem.betTX = waitSettleBetItem.txHash;
-                    historyItem.settleTX = settleBetItem.txHash;
-                    historyItem.secretNumber = secretNumber;
-                    historyItem.sha3_secretNumber = hash(encodePacked(secretNumber));
-                    // historyItem.sha3_betBlock = hash(encodePacked(commitLastBlock));
-                    historyItem.commitLastBlock = commitLastBlock;
-                    historyItem.sha3_betBlockHash_secretNumber = entropy;
-                    historyItem.diceResultIndex = Number("0x"+settleBetItem.data.substr(194,64));//topics[7];
-                    historyItem.jeckpot = jeckpot.toFixed(3);
-                    // historyList[moduloIndexDic[modulo]].unshift(historyItem);
-                    newItemDic[moduloIndexDic[modulo]].push(historyItem);
+                    if (settleBetItem.topics[0]==ABI_SettleBetPayment) {
+                      var modulo = waitSettleBetItem.topics[3];
+                      var betMask = Number(waitSettleBetItem.data.substr(0,66));//topic[4]押注对象
+                      var commitLastBlock = Number("0x"+waitSettleBetItem.data.substr(130,64))+120;//topic[6] 120是开奖最大有效延迟区块
+                      var totalWin = Number(settleBetItem.topics[3])/Wei;
+                      var betWin = Number(settleBetItem.data.substr(0,66))/Wei;//topic[4]
+                      var secretNumber = Number("0x"+settleBetItem.data.substr(66,64));//topics[5]
+                      var entropy = "0x"+settleBetItem.data.substr(130,64);//topic[6]
+                      var jeckpot = totalWin-betWin;
+                      if(jeckpot < 0.00001)//默认没中奖会给1wei
+                          jeckpot = 0;
+                      var historyItem = {};
+                      historyItem.commit = waitSettleBetItem.topics[1];
+                      historyItem.gambler = "0x"+waitSettleBetItem.topics[2].substring(26,66);
+                      historyItem.mask = betMask;
+                      historyItem.betAmount = (Number("0x"+waitSettleBetItem.data.substr(66,64))/Wei).toFixed(2);//topics[5]//押注金额
+                      historyItem.totalWin= totalWin.toFixed(2);//包括大奖
+                      historyItem.betWin= betWin.toFixed(2);
+                      historyItem.betTX = waitSettleBetItem.txHash;
+                      historyItem.settleTX = settleBetItem.txHash;
+                      historyItem.secretNumber = secretNumber;
+                      historyItem.sha3_secretNumber = hash(encodePacked(secretNumber));
+                      // historyItem.sha3_betBlock = hash(encodePacked(commitLastBlock));
+                      historyItem.commitLastBlock = commitLastBlock;
+                      historyItem.sha3_betBlockHash_secretNumber = entropy;
+                      historyItem.diceResultIndex = Number("0x"+settleBetItem.data.substr(194,64));//topics[7];
+                      historyItem.jeckpot = jeckpot.toFixed(3);
+                      // historyList[moduloIndexDic[modulo]].unshift(historyItem);
+                      newItemDic[moduloIndexDic[modulo]].push(historyItem);
+                    }
                     //删除waitSettleBetList第k个元素
                     var tempArr = [];
                     if(k>0){
