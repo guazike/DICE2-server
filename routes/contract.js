@@ -290,7 +290,8 @@ module.exports.getSign = function(req, res){
         }
 
         var commitLastBlock = latestBlock+60;
-        var randNum = Number(String(Math.random()).substr(2));//542454872110//截取小数点后面的数字
+        // var randNum = Number(String(Math.random()).substr(2));//542454872110//截取小数点后面的数字
+        var randNum = String(Math.random()).substr(2) + String(Math.random()).substr(2) + String(Math.random()).substr(2);
         var commit = hash(encodePacked(randNum));
         commitDic[commit] = {"reveal":randNum}
         var dataToSign = hash(encodePacked(commitLastBlock, commit));
@@ -934,4 +935,20 @@ function httpReq(url, cb){
             console.log(err.toString());
     });
     req.end();
+}
+
+function dec2hex(str){ // .toString(16) only works up to 2^53
+    var dec = str.toString().split(''), sum = [], hex = [], i, s
+    while(dec.length){
+        s = 1 * dec.shift()
+        for(i = 0; s || i < sum.length; i++){
+            s += (sum[i] || 0) * 10
+            sum[i] = s % 16
+            s = (s - sum[i]) / 16
+        }
+    }
+    while(sum.length){
+        hex.push(sum.pop().toString(16))
+    }
+    return hex.join('')
 }
