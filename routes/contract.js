@@ -678,7 +678,7 @@ async function sendDeployTx(res, conctractFlag){
     }
     try{
         delegateIndex = 0;//强制使用第一个代理商账号
-        rawTx = await makeRawTx(_contractBytes, 1, 0, null);
+        rawTx = await makeRawTx(_contractBytes, 1000000000, 0, null);
         tx = new Tx(rawTx);
 
         tx.sign(delegates[delegateIndex].privateKey);
