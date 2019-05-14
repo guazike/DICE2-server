@@ -384,6 +384,10 @@ module.exports.historyLog = function(req, res){
     var address = req.query.address;
 
     var logList = historyList[gameIndex];
+    if (!logList) {
+      res.end();
+      return;
+    }
     var newLogList = [];
     for(var i=0; i<logList.length; i++){
         if(logList[i].commit == lastCommit)
