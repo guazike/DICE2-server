@@ -293,6 +293,7 @@ module.exports.getSign = function(req, res){
         // var randNum = Number(String(Math.random()).substr(2));//542454872110//截取小数点后面的数字
         var randNum = String(Math.random()).substr(2) + String(Math.random()).substr(2) + String(Math.random()).substr(2);
         var commit = hash(encodePacked(dec2hex(randNum)));
+        console.log('commit: ', commit, randNum);
         commitDic[commit] = {"reveal":randNum}
         var dataToSign = hash(encodePacked(commitLastBlock, commit));
         var signObj = web3.eth.accounts.sign(dataToSign, delegates[delegateIndex].privateKeyStr);
