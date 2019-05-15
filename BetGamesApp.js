@@ -86,7 +86,7 @@ app.get('/require_coin', contract.require_coin);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-  var err = new Error('Not Found');
+  var err = new Error('Not Found: '+req.originalUrl+' from '+req.ip);
   err.status = 404;
   next(err);
 });
@@ -110,7 +110,7 @@ app.use(function(err, req, res, next) {
   }
   console.log(msg);
   // res.end(msg);
-    
+
 });
 
 //================设置web3==================
