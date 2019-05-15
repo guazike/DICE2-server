@@ -22,7 +22,7 @@ var delegateIndex = 0;//代理商轮流发交易
 var zeroStr64 = "0000000000000000000000000000000000000000000000000000000000000000";
 var fStr64 = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 var Wei = 1*10**18;
-var refreshTime = 5000;
+var refreshTime = 2000;
 
 var contractBlock = 16521575;//t g默认0，合约发布时的区块，部署完成后写死
 // const eventLogHost = "http://192.168.199.214/";//t g
@@ -423,7 +423,7 @@ function initLastSettleBlock(){
         })
 }
 
-//每5秒更新一次缓存
+//每refreshTime秒更新一次缓存
 var refreshLogHandle = -1;
 function startRefreshLog(){
     if(refreshLogHandle!=-1)
@@ -581,7 +581,7 @@ setInterval(async () => {
         {
             lowSpeedTime++;
             if(lowSpeedTime>3){//连续3次没人下注，则降低更新速度
-                refreshTime = 3000;
+                refreshTime = 2000;
                 startRefreshLog();
             }
         }else{
