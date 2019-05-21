@@ -3,7 +3,7 @@ var Schema   = mongoose.Schema;
 
 var Record = new Schema(
 {
-    "commit": {type: String, index: {unique: true}},
+    "commit": {type: String},
     "gambler": {type: String, index: true},
     "mask": String,
     "betAmount": String,
@@ -18,6 +18,7 @@ var Record = new Schema(
     "diceResultIndex": Number,
     "jeckpot": String,
     "blockNumber": Number,
+    "gameIndex": {type: Number, index: true},
 });
 
 module.exports.Record = mongoose.model('Record', Record);

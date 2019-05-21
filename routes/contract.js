@@ -378,12 +378,23 @@ module.exports.acceptNextOwner = function(req, res){
 
 //========================================日志查询==============================
 //定时查询下注日志，并对新下注开奖
-module.exports.historyLog = function(req, res){
+module.exports.historyLog = async function(req, res){
     var params = req.query.params;
     var gameIndex = req.query.gameIndex;
     var lastCommit = req.query.lastCommit;
     var address = req.query.address;
-
+    if(address){
+        // if(address==logList[i].gambler){
+        //     newLogList.push(logList[i]);
+        // }
+        let limit = await Record.findOne({commit: lastCommit}).exec();
+        let result = [];
+        if (limit && limit.blockNumber) {
+          result = await Record.find({gambler: address, gameIndex: gameIndex}).gt('blockNumber', limit.blockNumber).limit(50).sort({ blockNumber: 'desc'}).exec();
+        }
+        res.end(makeResult(params, result));
+        return;
+    }
     var logList = historyList[gameIndex];
     if (!logList) {
       res.end();
@@ -393,14 +404,7 @@ module.exports.historyLog = function(req, res){
     for(var i=0; i<logList.length; i++){
         if(logList[i].commit == lastCommit)
             break;
-
-        if(address){
-            if(address==logList[i].gambler){
-                newLogList.push(logList[i]);
-            }
-        }else{
-            newLogList.push(logList[i]);
-        }
+        newLogList.push(logList[i]);
     }
     res.end(makeResult(params, newLogList));
 }
@@ -500,6 +504,7 @@ function startRefreshLog(){
                       historyItem.diceResultIndex = Number("0x"+settleBetItem.data.substr(194,64));//topics[7];
                       historyItem.jeckpot = jeckpot.toFixed(3);
                       historyItem.blockNumber = settleBetItem.blockNumber;
+                      historyItem.gameIndex = moduloIndexDic[modulo];
                       try {
                         await Record.create(historyItem)
                       } catch (e) {
