@@ -50,7 +50,7 @@ historyList[1] = [];//投单色子
 historyList[2] = [];//投双色子
 historyList[3] = [];//过山车
 
-var historyStartBlock = 17034247;//缓存中日志的最小blockNumber，用于服务重启时还原交易记录
+var historyStartBlock = 17038412;//缓存中日志的最小blockNumber，用于服务重启时还原交易记录
 var waitSettleBetList = [];//下注后等待开奖列表
 
 // mongoose.connect('mongodb://etzscan:etz123@localhost:39462/BetDB');
@@ -387,11 +387,13 @@ module.exports.historyLog = async function(req, res){
         // if(address==logList[i].gambler){
         //     newLogList.push(logList[i]);
         // }
-        let limit = await Record.findOne({commit: lastCommit}).exec();
-        let result = [];
-        if (limit && limit.blockNumber) {
-          result = await Record.find({gambler: address, gameIndex: gameIndex}).gt('blockNumber', limit.blockNumber).limit(50).sort({ blockNumber: 'desc'}).exec();
+        let limitBlock = 0;
+        if (lastCommit) {
+          let limit = await Record.findOne({commit: lastCommit}).exec();
+          limitBlock = limit.blockNumber || 0
         }
+        let result = [];
+        result = await Record.find({gambler: address, gameIndex: gameIndex}).gt('blockNumber', limitBlock).limit(50).sort({ blockNumber: 'desc'}).exec();
         res.end(makeResult(params, result));
         return;
     }
@@ -411,7 +413,7 @@ module.exports.historyLog = async function(req, res){
 
 //服务启动时初始historyStartBlock
 function initLastSettleBlock(){
-    historyStartBlock = contractBlock;
+    // historyStartBlock = contractBlock;
     console.log("start historyStartBlock:",historyStartBlock);
     httpReq(eventLogHost+"publicAPI?module=logs&action=getLogs&address="+contractAddress+"&fromBlock="+historyStartBlock+1+"&topics="+ABI_SettleBetPayment+"&limit=15&returnFilters=blockNumber,-_id",
     (eventLogList)=>{
