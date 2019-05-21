@@ -5,7 +5,7 @@ var Record = new Schema(
 {
     "commit": {type: String},
     "gambler": {type: String, index: true},
-    "mask": String,
+    "mask": Number,
     "betAmount": String,
     "totalWin": String,
     "betWin": String,
@@ -13,7 +13,7 @@ var Record = new Schema(
     "settleTX": String,
     "secretNumber": String,
     "sha3_secretNumber": String,
-    "commitLastBlock": String,
+    "commitLastBlock": Number,
     "sha3_betBlockHash_secretNumber": String,
     "diceResultIndex": Number,
     "jeckpot": String,

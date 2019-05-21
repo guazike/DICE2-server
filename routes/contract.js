@@ -484,7 +484,7 @@ function startRefreshLog(){
                       var commitLastBlock = Number("0x"+waitSettleBetItem.data.substr(130,64))+120;//topic[6] 120是开奖最大有效延迟区块
                       var totalWin = Number(settleBetItem.topics[3])/Wei;
                       var betWin = Number(settleBetItem.data.substr(0,66))/Wei;//topic[4]
-                      var secretNumber = Number("0x"+settleBetItem.data.substr(66,64));//topics[5]
+                      var secretNumber = "0x"+settleBetItem.data.substr(66,64);//topics[5]
                       var entropy = "0x"+settleBetItem.data.substr(130,64);//topic[6]
                       var jeckpot = totalWin-betWin;
                       if(jeckpot < 0.00001)//默认没中奖会给1wei
