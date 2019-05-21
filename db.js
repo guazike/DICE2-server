@@ -23,5 +23,5 @@ var Record = new Schema(
 
 module.exports.Record = mongoose.model('Record', Record);
 
-mongoose.connect('mongodb://diceserver:etz123456@localhost:39462/betgames', {useMongoClient:true});
+mongoose.connect('mongodb://diceserver:etz123456@localhost:39462/betgames');
 mongoose.set('debug', false);

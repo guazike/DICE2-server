@@ -413,9 +413,11 @@ module.exports.historyLog = async function(req, res){
 
 //服务启动时初始historyStartBlock
 async function initLastSettleBlock(){
-    // historyStartBlock = contractBlock;
+    historyStartBlock = contractBlock;
     let newestTx = await Record.findOne().sort({blockNumber: 'desc'}).limit(1).exec();
-    historyStartBlock = newestTx.blockNumber || contractBlock;
+    if (newestTx && newestTx.blockNumber) {
+      historyStartBlock = newestTx.blockNumber;
+    }
     console.log("start historyStartBlock:",historyStartBlock);
     httpReq(eventLogHost+"publicAPI?module=logs&action=getLogs&address="+contractAddress+"&fromBlock="+historyStartBlock+1+"&topics="+ABI_SettleBetPayment+"&limit=15&returnFilters=blockNumber,-_id",
     (eventLogList)=>{
