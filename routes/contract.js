@@ -50,7 +50,7 @@ historyList[1] = [];//投单色子
 historyList[2] = [];//投双色子
 historyList[3] = [];//过山车
 
-var historyStartBlock = 0;//缓存中日志的最小blockNumber，用于服务重启时还原交易记录
+var historyStartBlock = 17034247;//缓存中日志的最小blockNumber，用于服务重启时还原交易记录
 var waitSettleBetList = [];//下注后等待开奖列表
 
 // mongoose.connect('mongodb://etzscan:etz123@localhost:39462/BetDB');
@@ -499,10 +499,11 @@ function startRefreshLog(){
                       historyItem.sha3_betBlockHash_secretNumber = entropy;
                       historyItem.diceResultIndex = Number("0x"+settleBetItem.data.substr(194,64));//topics[7];
                       historyItem.jeckpot = jeckpot.toFixed(3);
+                      historyItem.blockNumber = settleBetItem.blockNumber;
                       try {
                         await Record.create(historyItem)
                       } catch (e) {
-                        console.log(e);
+                        console.log('error on save: ' + historyItem.commit);
                       }
                       // historyList[moduloIndexDic[modulo]].unshift(historyItem);
                       newItemDic[moduloIndexDic[modulo]].push(historyItem);

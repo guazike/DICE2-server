@@ -1,5 +1,5 @@
 module.exports = {
-  apps : [{
+  betgame : [{
     name: 'betGames',
     script: 'BetGamesApp.js',
     cwd: '/root/zerodice/DICE2-server',
