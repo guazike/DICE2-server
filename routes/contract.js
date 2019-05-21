@@ -50,7 +50,7 @@ historyList[1] = [];//投单色子
 historyList[2] = [];//投双色子
 historyList[3] = [];//过山车
 
-var historyStartBlock = 17038412;//缓存中日志的最小blockNumber，用于服务重启时还原交易记录
+var historyStartBlock = contractBlock;//缓存中日志的最小blockNumber，用于服务重启时还原交易记录
 var waitSettleBetList = [];//下注后等待开奖列表
 
 // mongoose.connect('mongodb://etzscan:etz123@localhost:39462/BetDB');
@@ -413,8 +413,7 @@ module.exports.historyLog = async function(req, res){
 
 //服务启动时初始historyStartBlock
 async function initLastSettleBlock(){
-    historyStartBlock = contractBlock;
-    let newestTx = await Record.findOne().sort({blockNumber: 'desc'}).limit(1).exec();
+    let newestTx = await Record.findOne().sort({blockNumber: 'desc'}).exec();
     if (newestTx && newestTx.blockNumber) {
       historyStartBlock = newestTx.blockNumber;
     }
