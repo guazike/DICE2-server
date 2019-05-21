@@ -3,6 +3,7 @@ var etherUnits = require("../lib/etherUnits.js");
 var BigNumber = require('bignumber.js');
 var Tx = require('ethereumjs-tx');
 var http = require("http");
+var { Record } = require('../db');
 // var mongoose = require( 'mongoose' );
 // var Schema   = mongoose.Schema;
 
@@ -498,6 +499,11 @@ function startRefreshLog(){
                       historyItem.sha3_betBlockHash_secretNumber = entropy;
                       historyItem.diceResultIndex = Number("0x"+settleBetItem.data.substr(194,64));//topics[7];
                       historyItem.jeckpot = jeckpot.toFixed(3);
+                      try {
+                        await Record.create(historyItem)
+                      } catch (e) {
+                        console.log(e);
+                      }
                       // historyList[moduloIndexDic[modulo]].unshift(historyItem);
                       newItemDic[moduloIndexDic[modulo]].push(historyItem);
                     }
