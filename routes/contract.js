@@ -291,7 +291,7 @@ module.exports.getSign = function(req, res){
             return;
         }
 
-        var commitLastBlock = latestBlock+60;
+        var commitLastBlock = latestBlock+120;
         // var randNum = Number(String(Math.random()).substr(2));//542454872110//截取小数点后面的数字
         var randNum = Number(String(Math.random()).substr(3)).toString() + String(Math.random()).substr(3) + String(Math.random()).substr(3);
         var commit = hash(encodePacked(dec2hex(randNum)));
