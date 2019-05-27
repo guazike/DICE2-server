@@ -500,7 +500,7 @@ var debugMode = true;//是否为调试模式，调试模式将强制使用本地
 
 var MaxEstimateGas = 3700000;//通过多次交易测试后选最大的gas
 var contractAddress = null;//;//为null时可以通过deployContract请求来部署
-var SecretSigner = "0xeb0e5b3c177c72235d07d8daa6e7ad8fe701e24a";
+var SecretSigner = "0x51e47ef7e922b00d53dc4df4cab3c1e82a0f6346";
 // var Croupier = "0xeb0e5b3c177c72235d07d8daa6e7ad8fe701e24a";//相当于COO
 //代理商信息，第一个代理商同时也是合约发布者
 var delegates = [];
@@ -521,6 +521,7 @@ var startWeb3 = async function(cb) {
     var rpcURL;
     //为调试与发布模式强制设置一些值方便测试与提高安全性
     if(debugMode){
+			contractAddress = "0x74Ae5198A336FA224F0404cd5474d3B004c8886f";
       // contractAddress = "0x4d48bebccb0a4bd8f99a955eaa4470f6796831ea";
       // contractAddress = "0xbc402c35d19bbec48ef64d5c59c42f7b8de27f9a";
       // contractAddress = "0x7fc9cc8410fe8ab9b588d2f95bc21d613fb43718";

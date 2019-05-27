@@ -25,7 +25,7 @@ var fStr64 = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 var Wei = 1*10**18;
 var refreshTime = 2000;
 
-var contractBlock = 16521575;//t g默认0，合约发布时的区块，部署完成后写死
+var contractBlock = 17444027;//t g默认0，合约发布时的区块，部署完成后写死
 // const eventLogHost = "http://192.168.199.214/";//t g
 const eventLogHost = "http://localhost/";
 // const eventLogHost = "http://etzscan.com/";//t
