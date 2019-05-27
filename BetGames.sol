@@ -258,7 +258,7 @@ contract ETZ_Dice {
         require (betMask > 0 && betMask <= MAX_MASK[modulo], "Mask should be within range.");
 
         // Check that commit is valid - it has not expired and its signature is valid.
-        require (block.number <= commitLastBlock, "Commit has expired.");
+        require (block.number <= commitLastBlock && block.number + 300 > commitLastBlock, "Commit has expired.");
 
         address crecoverAddr = ecrecover(keccak256(abi.encodePacked(prefix, keccak256(abi.encodePacked(commitLastBlock, commit)))), v, r, s);
         require(isCOO(crecoverAddr) , "ECDSA signature is not valid.");
@@ -324,7 +324,7 @@ contract ETZ_Dice {
         // are not aware of "reveal" and cannot deduce it from "commit" (as Keccak256
         // preimage is intractable), and house is unable to alter the "reveal" after
         // placeBet have been mined (as Keccak256 collision finding is also intractable).
-        uint entropy = uint(keccak256(abi.encodePacked(reveal, blockhash(placeBlockNum))));
+        uint entropy = uint(keccak256(abi.encodePacked(reveal, blockhash(placeBlockNum), blockhash(placeBlockNum - 1))));
 
 
         // Do a roll by taking a modulo of entropy. Compute winning amount.
@@ -465,14 +465,14 @@ contract ETZ_Dice {
         }
 
         //standZoomRate = modulo/betOnTargetNum
-        uint fee = 0;
-        if(amount<60000000000000000000){//60ether
-            fee = amount*modulo/betOnTargetNum*2/100;
-        }else if(amount<100000000000000000000){//100ether
-            fee = amount*modulo/betOnTargetNum*1/100;
-        }else{//0.5%
-            fee = amount*modulo/betOnTargetNum*5/1000;
-        }
+        uint fee = amount*modulo/betOnTargetNum*2/100;
+        // if(amount<60000000000000000000){//60ether
+        //     fee = amount*modulo/betOnTargetNum*2/100;
+        // }else if(amount<100000000000000000000){//100ether
+        //     fee = amount*modulo/betOnTargetNum*1/100;
+        // }else{//0.5%
+        //     fee = amount*modulo/betOnTargetNum*5/1000;
+        // }
         winAmount = amount*modulo/betOnTargetNum - fee - jackpotFee;
     }
 
