@@ -50,6 +50,8 @@ historyList[1] = [];//投单色子
 historyList[2] = [];//投双色子
 historyList[3] = [];//过山车
 
+var requestSignMap = new Map();
+
 var historyStartBlock = contractBlock;//缓存中日志的最小blockNumber，用于服务重启时还原交易记录
 var waitSettleBetList = [];//下注后等待开奖列表
 
@@ -286,6 +288,12 @@ function toArray(arrayInput){
 //返回 uint commitLastBlock, uint commit, bytes32 r, bytes32 s
 module.exports.getSign = function(req, res){
     console.log(req.connection.remoteAddress);
+    let lasttime = requestSignMap.get(req.connection.remoteAddress);
+    let now = new Date();
+    if (lasttime && now - lasttime < 3000) {
+      return res.end();
+    }
+    requestSignMap.set(req.connection.remoteAddress, now);
     web3.eth.getBlockNumber(async (err, latestBlock)=>{
         if(err){
             res.end("");
