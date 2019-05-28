@@ -285,6 +285,7 @@ function toArray(arrayInput){
 //=========================================调用合约===========================================
 //返回 uint commitLastBlock, uint commit, bytes32 r, bytes32 s
 module.exports.getSign = function(req, res){
+    console.log(req.connection.remoteAddress);
     web3.eth.getBlockNumber(async (err, latestBlock)=>{
         if(err){
             res.end("");
