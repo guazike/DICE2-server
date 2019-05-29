@@ -287,7 +287,7 @@ function toArray(arrayInput){
 //=========================================调用合约===========================================
 //返回 uint commitLastBlock, uint commit, bytes32 r, bytes32 s
 module.exports.getSign = function(req, res){
-    console.log(req.connection.remoteAddress);
+    // console.log(req.connection.remoteAddress);
     let lasttime = requestSignMap.get(req.connection.remoteAddress);
     let now = new Date();
     if (lasttime && now - lasttime < 3000) {
@@ -306,7 +306,7 @@ module.exports.getSign = function(req, res){
         var commit = hash(encodePacked(dec2hex(randNum)));
         commitDic[commit] = {"reveal":randNum}
         var dataToSign = hash(encodePacked(commitLastBlock, commit));
-        var signObj = web3.eth.accounts.sign(dataToSign, delegates[delegateIndex].privateKeyStr);
+        var signObj = web3.eth.accounts.sign(dataToSign, SecretSigner.privateKeyStr);
         var result = {"commitLastBlock":commitLastBlock, "commit":commit, "v":parseInt(signObj.v), "r":signObj.r, "s":signObj.s};
         res.end(JSON.stringify(result));
     })
@@ -806,10 +806,14 @@ var setCOO = async function(res){
         return;
     //设置COO
     for(var j=1; j<delegates.length; j++){
-        inputData = encodeABI("addCOO",delegates[j].account);
+        let inputData = encodeABI("addCOO",delegates[j].account);
         delegateIndex = 0;//强制使用第一个代理商账号
         await sendRawTransaction(res, "", null, inputData);
     }
+    // wait for test
+    let inputData = encodeABI("addCOO",SecretSigner.account);
+    delegateIndex = 0;//强制使用第一个代理商账号
+    await sendRawTransaction(res, "", null, inputData);
 }
 
 //设置SecretSigner，需要确保主合约已经部署

@@ -500,7 +500,7 @@ var debugMode = true;//是否为调试模式，调试模式将强制使用本地
 
 var MaxEstimateGas = 3700000;//通过多次交易测试后选最大的gas
 var contractAddress = null;//;//为null时可以通过deployContract请求来部署
-var SecretSigner = "0x51e47ef7e922b00d53dc4df4cab3c1e82a0f6346";
+var SecretSigner = {account: "0xe835C3817773AFd889e613E55B3d4e1cC1d44372", privateKeyStr: "0x0da2236684644cbea4c5de16564f254223b866fbb4979aa4a0a60feeb18207d8"};
 // var Croupier = "0xeb0e5b3c177c72235d07d8daa6e7ad8fe701e24a";//相当于COO
 //代理商信息，第一个代理商同时也是合约发布者
 var delegates = [];
