@@ -11,6 +11,7 @@ pragma solidity ^0.4.24;
 // * Refer to https://dice2.win/whitepaper.pdf for detailed description and proofs.
 
 contract ETZ_Dice {
+    //todo secret signer
     /// *** Constants section
 
     // Bets lower than this amount do not participate in jackpot rolls (and are
@@ -59,6 +60,8 @@ contract ETZ_Dice {
     // Standard contract ownership transfer.
     address public owner;
     address private nextOwner;
+    // The address corresponding to a private key used to sign placeBet commits.
+    address public secretSigner;
 
     // Adjustable max bet profit. Used to cap bets against dynamic odds.
     uint public maxProfit = 5000 ether;
@@ -170,6 +173,11 @@ contract ETZ_Dice {
     function () public payable {
     }
 
+    // See comment for "secretSigner" variable.
+    function setSecretSigner(address newSecretSigner) external onlyOwner {
+        secretSigner = newSecretSigner;
+    }
+
     // Change the croupier address.
     // function setCroupier(address newCroupier) external onlyOwner {
     //     croupier = newCroupier;
@@ -259,9 +267,9 @@ contract ETZ_Dice {
 
         // Check that commit is valid - it has not expired and its signature is valid.
         require (block.number <= commitLastBlock && block.number + 300 > commitLastBlock, "Commit has expired.");
-
-        address crecoverAddr = ecrecover(keccak256(abi.encodePacked(prefix, keccak256(abi.encodePacked(commitLastBlock, commit)))), v, r, s);
-        require(isCOO(crecoverAddr) , "ECDSA signature is not valid.");
+        require(secretSigner == ecrecover(keccak256(abi.encodePacked(prefix, keccak256(abi.encodePacked(commitLastBlock, commit)))), v, r, s));
+        // address crecoverAddr = ecrecover(keccak256(abi.encodePacked(prefix, keccak256(abi.encodePacked(commitLastBlock, commit)))), v, r, s);
+        // require(isCOO(crecoverAddr) , "ECDSA signature is not valid.");
 
         // Winning amount and jackpot increase.
         uint possibleWinAmount;
@@ -324,7 +332,7 @@ contract ETZ_Dice {
         // are not aware of "reveal" and cannot deduce it from "commit" (as Keccak256
         // preimage is intractable), and house is unable to alter the "reveal" after
         // placeBet have been mined (as Keccak256 collision finding is also intractable).
-        uint entropy = uint(keccak256(abi.encodePacked(reveal, blockhash(placeBlockNum), blockhash(placeBlockNum - 1))));
+        uint entropy = uint(keccak256(abi.encodePacked(reveal, blockhash(placeBlockNum), blockhash(placeBlockNum + 1))));
 
 
         // Do a roll by taking a modulo of entropy. Compute winning amount.

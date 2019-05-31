@@ -811,8 +811,7 @@ var setCOO = async function(res){
         await sendRawTransaction(res, "", null, inputData);
     }
     // wait for test
-    let inputData = encodeABI("addCOO",SecretSigner.account);
-    delegateIndex = 0;//强制使用第一个代理商账号
+    let inputData = encodeABI("setSecretSigner",SecretSigner.account);
     await sendRawTransaction(res, "", null, inputData);
 }
 
