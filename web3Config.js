@@ -549,7 +549,7 @@ var startWeb3 = async function(cb) {
     var rpcURL;
     //为调试与发布模式强制设置一些值方便测试与提高安全性
     if(debugMode){
-			// contractAddress = "0x74Ae5198A336FA224F0404cd5474d3B004c8886f";
+			contractAddress = "0x775e7486eb8d3349f87faef3d6903c6358f5580d";
 			// contractAddress = "0x74Ae5198A336FA224F0404cd5474d3B004c8886f";
       // contractAddress = "0x4d48bebccb0a4bd8f99a955eaa4470f6796831ea";
       // contractAddress = "0xbc402c35d19bbec48ef64d5c59c42f7b8de27f9a";
